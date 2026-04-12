@@ -13,6 +13,10 @@ square = lambda x: x * x
 
 print(square(5))
 
+# Lambda Function Example
+add = lambda x, y: x + y
+print("Lambda Add:", add(5, 3))
+
 # print inbuild function list
 print(len("Hello, World!"))
 
@@ -45,16 +49,12 @@ print(outer_function())
 def factorial(n):
     if n == 0:
         return 1
-    else:
-        return n * factorial(n - 1)
+    return n * factorial(n - 1)
 
-print(factorial(5))
-
+print("Factorial of 5:", factorial(5))
 
 # function with variable number of arguments
 def variable_args(*args):
     return f"Arguments: {args}"
 
 print(variable_args(1, 2, 3, "Hello", [4, 5],7,88,99,100,101,102,103,104,105,106,107,108,109,110))
-
-
