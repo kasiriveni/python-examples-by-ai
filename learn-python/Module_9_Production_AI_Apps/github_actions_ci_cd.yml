@@ -1,0 +1,58 @@
+"""
+This script demonstrates setting up a GitHub Actions workflow for CI/CD pipelines.
+Topics covered:
+1. Running tests with pytest.
+2. Building and deploying Docker containers.
+"""
+
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Install dependencies
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        source .venv/bin/activate
+        pytest
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to DockerHub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t my-app:latest .
+        docker tag my-app:latest my-dockerhub-username/my-app:latest
+        docker push my-dockerhub-username/my-app:latest
