@@ -1,8 +1,3 @@
-import sys
-print(sys.version)
-print(sys.version_info)
-print(sys.platform)
-
 # Type Casting & Exceptions
 # This script demonstrates type casting and exception handling.
 
