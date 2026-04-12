@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "example_package"
+version = "0.1.0"
+description = "Example package"
+
+# Use this file as a starting point for packaging
