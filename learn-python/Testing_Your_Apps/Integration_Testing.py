@@ -9,6 +9,15 @@ app = Flask(__name__)
 def home():
     return "Hello, Integration Testing!"
 
+# /post api
+
+@app.route('/post', methods=['POST'])
+def post():
+    return "Post request received!"
+
+
+
+
 class TestIntegration(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()

@@ -1,6 +1,10 @@
 # Performance & Optimization: lru_cache, timeit
 from functools import lru_cache
 import time
+# import os
+
+
+# print(os.cpu_count())
 
 @lru_cache(maxsize=None)
 def fib(n):

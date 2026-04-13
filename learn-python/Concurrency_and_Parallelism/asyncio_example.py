@@ -38,4 +38,6 @@ async def main():
     await queue.put(None)  # Signal the consumer to exit
     await consumer_task
 
+    print("Running main function:")
+
 asyncio.run(main())
