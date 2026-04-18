@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
 
-app = FastAPI(title="Todo API", version="1.0.0")
+app = FastAPI(title="Todo API List", version="2.0.0")
 
 # Pydantic models
 class TodoCreate(BaseModel):
