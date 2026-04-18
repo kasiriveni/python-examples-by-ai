@@ -1,8 +1,35 @@
 # Core Python Concepts
 
-- Build and consume REST APIs using request methods, status codes, and JSON payloads.
-- Use web frameworks such as Flask, FastAPI, and Django REST to expose endpoints.
-- Understand request validation, serialization, and response formatting.
-- Work with GraphQL schemas, resolvers, and query-based data fetching.
-- Implement authentication flows such as JWT-based access control.
-- Structure API code around routing, business logic, and data models.
+## Core Themes
+- REST API construction across common Python frameworks.
+- GraphQL schemas and resolver patterns.
+- JWT-based authentication and serialization concerns.
+
+## Core Theme Examples
+- Example 1: Build REST endpoints with GET, POST, and DELETE routes.
+- Example 2: Define GraphQL types and write query resolvers.
+- Example 3: Validate JWT tokens and handle authorization headers.
+
+## Files and Concepts
+- Django_REST.py: Django REST framework serializers, APIView classes, endpoint structure
+- FastAPI_REST.py: FastAPI routing, path parameters, query parameters
+- Flask_REST.py: Flask route decorators, blueprints, jsonify responses
+- GraphQL_Graphene.py: Graphene schemas, ObjectType, query resolvers
+- GraphQL_Strawberry.py: Strawberry decorators, async schema types, FastAPI integration
+- JWT_Authentication.py: JWT decoding, OAuth2 scheme flow, token validation
+
+## Core Example
+This example builds a tiny JSON response with the standard library.
+
+```python
+import json
+from http.server import BaseHTTPRequestHandler
+
+class Handler(BaseHTTPRequestHandler):
+	def do_GET(self):
+		body = json.dumps({"status": "ok", "items": [1, 2, 3]}).encode()
+		self.send_response(200)
+		self.send_header("Content-Type", "application/json")
+		self.end_headers()
+		self.wfile.write(body)
+```
