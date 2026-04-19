@@ -52,3 +52,7 @@ pip-delete-this-directory.txt
 # OS
 Thumbs.db
 .DS_Store
+
+**/learn-python/.env
+**/learn-python/.prod.env
+**/learn-python/.sit.env
