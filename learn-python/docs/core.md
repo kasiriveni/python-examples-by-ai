@@ -15,11 +15,3 @@
 
 ## Core Example
 This example uses a docstring and type hints to document a small helper.
-
-```python
-def add(left: int, right: int) -> int:
-	"""Return the sum of two integers."""
-	return left + right
-
-print(add(2, 5))
-```
