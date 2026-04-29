@@ -1,0 +1,23 @@
+{
+	"id": 4821,
+	"title": "Weekend Project",
+	"category": "learning",
+	"isActive": true,
+	"rating": 4.7,
+	"tags": ["json", "example", "practice"],
+	"owner": {
+		"name": "Asha",
+		"email": "asha@example.com"
+	},
+	"tasks": [
+		{
+			"name": "Read docs",
+			"done": true
+		},
+		{
+			"name": "Build sample",
+			"done": false
+		}
+	],
+	"metadata": null
+}
