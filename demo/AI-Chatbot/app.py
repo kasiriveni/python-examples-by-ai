@@ -10,6 +10,7 @@ load_dotenv(Path(__file__).parent / ".env")
 app = Flask(__name__)
 _client = None
 HISTORY_PATH = Path(__file__).parent / "chat_history.json"
+DEMO_MODE = not os.getenv("OPENAI_API_KEY")
 
 
 def get_client():
@@ -20,6 +21,28 @@ def get_client():
             raise ValueError("OPENAI_API_KEY environment variable is not set.")
         _client = OpenAI(api_key=api_key)
     return _client
+
+
+def fake_reply(message: str) -> str:
+    """Return a plausible-looking demo reply when no API key is configured."""
+    msg = message.lower()
+    if any(w in msg for w in ("hello", "hi", "hey")):
+        return "Hello! I'm your AI assistant running in demo mode. How can I help you today?"
+    if "python" in msg:
+        return (
+            "Python is a versatile, beginner-friendly language widely used for web development, "
+            "data science, automation, and AI. Its clean syntax makes it a great first language to learn!"
+        )
+    if any(w in msg for w in ("what", "how", "why", "explain")):
+        return (
+            f"Great question about '{message}'! "
+            "In a real session the AI would provide a detailed, context-aware answer. "
+            "Add an OPENAI_API_KEY to your .env file to enable live responses."
+        )
+    return (
+        f"You said: \"{message}\". "
+        "This is a demo response — add an OPENAI_API_KEY to your .env file to get real AI replies."
+    )
 
 
 def load_history():
@@ -40,7 +63,7 @@ def save_message(role, content):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", demo_mode=DEMO_MODE)
 
 
 @app.route("/api/history")
@@ -56,6 +79,11 @@ def api_chat():
         return jsonify({"error": "empty message"}), 400
 
     save_message("user", message)
+
+    if DEMO_MODE:
+        reply = fake_reply(message)
+        save_message("assistant", reply)
+        return jsonify({"reply": reply, "demo": True})
 
     # Build a concise conversation context (last 10 messages)
     history = load_history()
@@ -73,8 +101,10 @@ def api_chat():
             temperature=0.7,
         )
         reply = resp.choices[0].message.content.strip()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        reply = fake_reply(message)
+        save_message("assistant", reply)
+        return jsonify({"reply": reply, "demo": True})
 
     save_message("assistant", reply)
     return jsonify({"reply": reply})

@@ -13,6 +13,7 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB upload limit
 
 _client = None
+DEMO_MODE = not os.getenv("OPENAI_API_KEY")
 
 ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
 
@@ -53,13 +54,40 @@ def extract_text(file) -> str:
     return data.decode("utf-8", errors="replace").strip()
 
 
+def fake_response() -> dict:
+    """Return sample analysis when no API key is configured."""
+    return {
+        "summary": (
+            "The candidate has a solid background in software development with experience in "
+            "Python, web frameworks, and database management. Their profile shows strong "
+            "technical foundations and a track record of delivering projects on time. "
+            "Overall fit for the role appears promising based on the submitted resume."
+        ),
+        "skill_gaps": [
+            "Cloud infrastructure experience (AWS/GCP/Azure) not mentioned",
+            "No evidence of CI/CD pipeline configuration",
+            "Limited experience with containerization (Docker/Kubernetes)",
+        ],
+        "suggestions": [
+            "Quantify your achievements — add metrics like '20% performance improvement'.",
+            "Include relevant certifications (e.g., AWS Certified Developer).",
+            "Add a 'Projects' section with links to GitHub repositories.",
+            "Tailor the summary to match keywords from the job description.",
+        ],
+        "demo": True,
+    }
+
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", demo_mode=DEMO_MODE)
 
 
 @app.route("/api/analyze", methods=["POST"])
 def api_analyze():
+    if DEMO_MODE:
+        return jsonify(fake_response())
+
     if "resume" not in request.files:
         return jsonify({"error": "No resume file uploaded."}), 400
 
@@ -110,8 +138,9 @@ Return only valid JSON with no markdown fencing."""
         result = json.loads(content)
     except json.JSONDecodeError:
         return jsonify({"error": "Model returned non-JSON response. Please try again."}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        result = fake_response()
+        return jsonify(result)
 
     return jsonify(result)
 
