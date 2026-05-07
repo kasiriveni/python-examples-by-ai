@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify
-import os
 import json
+import os
 from pathlib import Path
-from openai import OpenAI
+import sys
+
 from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
+from openai import OpenAI
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -40,7 +42,7 @@ def fake_reply(message: str) -> str:
             "Add an OPENAI_API_KEY to your .env file to enable live responses."
         )
     return (
-        f"You said: \"{message}\". "
+        f'You said: "{message}". '
         "This is a demo response — add an OPENAI_API_KEY to your .env file to get real AI replies."
     )
 
@@ -87,9 +89,7 @@ def api_chat():
 
     # Build a concise conversation context (last 10 messages)
     history = load_history()
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
+    messages = [{"role": "system", "content": "You are a helpful assistant."}]
     for m in history[-10:]:
         messages.append({"role": m["role"], "content": m["content"]})
 
