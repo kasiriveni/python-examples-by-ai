@@ -56,3 +56,6 @@ Thumbs.db
 **/learn-python/.env
 **/learn-python/.prod.env
 **/learn-python/.sit.env
+
+
+htmlcov

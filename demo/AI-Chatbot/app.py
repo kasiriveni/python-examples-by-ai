@@ -1,21 +1,38 @@
-import json
-import os
-from pathlib import Path
-import sys
+"""Backward-compatible top-level module and launcher.
 
-from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+This file is a thin compatibility layer that exposes the original
+names used by the test-suite and previous code (e.g. `fake_reply`,
+`load_history`, `save_message`, `get_client`, `HISTORY_PATH`, etc.) while
+delegating the implementation into the `src` package.
+"""
+
+import os
+
 from openai import OpenAI
 
-load_dotenv(Path(__file__).parent / ".env")
+from src import app as _flask_app
+from src import client as _client_mod
+from src import config as _config_mod
 
-app = Flask(__name__)
-_client = None
-HISTORY_PATH = Path(__file__).parent / "chat_history.json"
-DEMO_MODE = not os.getenv("OPENAI_API_KEY")
+# Flask application (kept name `app` for compatibility)
+app = _flask_app
 
+
+# Backwards-compatible names expected by tests / external imports
+HISTORY_PATH = _config_mod.HISTORY_PATH
+DEMO_MODE = _config_mod.DEMO_MODE
+
+# Local client handle (tests mutate this)
+_client = _client_mod._client
+
+notes: Str= 'hello'
 
 def get_client():
+    """Compatibility wrapper around client.get_client().
+
+    The original tests expect `get_client()` and a module-level
+    `_client` variable to exist on `app` — keep that behaviour.
+    """
     global _client
     if _client is None:
         api_key = os.getenv("OPENAI_API_KEY")
@@ -26,88 +43,34 @@ def get_client():
 
 
 def fake_reply(message: str) -> str:
-    """Return a plausible-looking demo reply when no API key is configured."""
-    msg = message.lower()
-    if any(w in msg for w in ("hello", "hi", "hey")):
-        return "Hello! I'm your AI assistant running in demo mode. How can I help you today?"
-    if "python" in msg:
-        return (
-            "Python is a versatile, beginner-friendly language widely used for web development, "
-            "data science, automation, and AI. Its clean syntax makes it a great first language to learn!"
-        )
-    if any(w in msg for w in ("what", "how", "why", "explain")):
-        return (
-            f"Great question about '{message}'! "
-            "In a real session the AI would provide a detailed, context-aware answer. "
-            "Add an OPENAI_API_KEY to your .env file to enable live responses."
-        )
-    return (
-        f'You said: "{message}". '
-        "This is a demo response — add an OPENAI_API_KEY to your .env file to get real AI replies."
-    )
+    return _client_mod.fake_reply(message)
 
 
 def load_history():
-    if not HISTORY_PATH.exists():
-        HISTORY_PATH.write_text("[]")
+    # Use the top-level HISTORY_PATH so tests can monkeypatch it.
+    path = HISTORY_PATH
+    if not path.exists():
+        path.write_text("[]")
     try:
-        return json.loads(HISTORY_PATH.read_text())
+        import json
+
+        return json.loads(path.read_text())
     except Exception:
-        HISTORY_PATH.write_text("[]")
+        path.write_text("[]")
         return []
 
 
 def save_message(role, content):
+    # Use the top-level HISTORY_PATH so tests can monkeypatch it.
+    import json
+
     history = load_history()
     history.append({"role": role, "content": content})
     HISTORY_PATH.write_text(json.dumps(history, indent=2))
 
 
-@app.route("/")
-def index():
-    return render_template("index.html", demo_mode=DEMO_MODE)
-
-
-@app.route("/api/history")
-def api_history():
-    return jsonify(load_history())
-
-
-@app.route("/api/chat", methods=["POST"])
-def api_chat():
-    data = request.get_json() or {}
-    message = (data.get("message") or "").strip()
-    if not message:
-        return jsonify({"error": "empty message"}), 400
-
-    save_message("user", message)
-
-    if DEMO_MODE:
-        reply = fake_reply(message)
-        save_message("assistant", reply)
-        return jsonify({"reply": reply, "demo": True})
-
-    # Build a concise conversation context (last 10 messages)
-    history = load_history()
-    messages = [{"role": "system", "content": "You are a helpful assistant."}]
-    for m in history[-10:]:
-        messages.append({"role": m["role"], "content": m["content"]})
-
-    try:
-        resp = get_client().chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=500,
-            temperature=0.7,
-        )
-        reply = resp.choices[0].message.content.strip()
-    except Exception:
-        reply = fake_reply(message)
-        save_message("assistant", reply)
-        return jsonify({"reply": reply, "demo": True})
-
-    save_message("assistant", reply)
-    return jsonify({"reply": reply})
+# Expose OpenAI symbol so tests can patch `app.OpenAI`
+OpenAI = OpenAI
 
 
 if __name__ == "__main__":

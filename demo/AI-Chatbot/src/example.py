@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -15,7 +17,7 @@ def very_important_function(
     debug: bool = False,
 ):
     """Applies `variables` to the `template` and writes to `file`."""
-    with open(file, "w") as f:
+    with open(file, "w") as _f:
         ...
 
 
